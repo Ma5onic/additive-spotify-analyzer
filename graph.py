@@ -13,7 +13,9 @@ from functools import lru_cache
 
 
 def cache_clear():
+    print(" create_top_artists_graph cache_info:" + str(create_top_artists_graph.cache_info()))
     create_top_artists_graph.cache_clear()
+    print(" create_dataseries cache_info:" + str(create_dataseries.cache_info()))
     create_dataseries.cache_clear()
 
 

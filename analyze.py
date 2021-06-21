@@ -25,11 +25,18 @@ from sklearn.preprocessing import MinMaxScaler
 from functools import lru_cache
 
 processedDataDir = "/additivespotifyanalyzer"
+lru_cache.DEBUG = True
+
 
 def cache_clear():
+    print("clearing analyze cache")
+    print(" loadAudioFeatures cache_info:" + str(loadAudioFeatures.cache_info()))
     loadAudioFeatures.cache_clear()
+    print(" loadAudioFeatures cache_info:"+str(loadLibraryFromFiles.cache_info()))
     loadLibraryFromFiles.cache_clear()
+    print(" loadAudioFeatures cache_info:"+str(getOrGeneratePublicPlaylistsFile.cache_info()))
     getOrGeneratePublicPlaylistsFile.cache_clear()
+
 
 def getEmptyLibrary():
     library = {}
@@ -127,7 +134,8 @@ def isLibraryValid(directory=None):
 
     return True
 
-@lru_cache(maxsize = 128)
+
+@lru_cache(maxsize=128)
 def loadLibraryFromFiles(directory=None):
     library = {}
 

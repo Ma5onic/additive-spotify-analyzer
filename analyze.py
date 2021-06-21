@@ -262,7 +262,7 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restric
     # get starting time
     start = datetime.now()
     tracemalloc.start()
-    print('generating public playlist file ' + tracemalloc.get_traced_memory())
+    print('generating public playlist file ' + str(tracemalloc.get_traced_memory()))
 
     if os.path.exists(publicPlaylistFile):
         os.remove(publicPlaylistFile)

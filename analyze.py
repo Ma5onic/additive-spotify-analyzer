@@ -237,6 +237,7 @@ def getRandomPlaylist(directory, type, restriction):
 
     publicPlaylistFile = directory+processedDataDir+"/public-playlists.json"
 
+    print("public playlists file is "+publicPlaylistFile)
     data = getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restriction)
 
     if data is None:

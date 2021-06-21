@@ -14,6 +14,7 @@ import matplotlib.cm as cm
 import plotly
 import plotly.graph_objects as go
 import plotly.express as px
+import tracemalloc
 
 from sklearn.cluster import KMeans
 
@@ -135,7 +136,7 @@ def isLibraryValid(directory=None):
     return True
 
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=16)
 def loadLibraryFromFiles(directory=None):
     library = {}
 
@@ -146,6 +147,9 @@ def loadLibraryFromFiles(directory=None):
     dreamsA = ['Python. Python, everywhere.']
     numberA = 10
     strA = "someString"
+
+    tracemalloc.start()
+
 
     #path = "data/"
     path = directory
@@ -250,13 +254,15 @@ def getRandomPlaylist(directory, type, restriction):
     return data[r]
 
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=16)
 def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restriction):
     if not os.path.exists(directory + processedDataDir):
         os.mkdir(directory + processedDataDir)
         print('directory does not exist so create ' +directory+processedDataDir)
     # get starting time
     start = datetime.now()
+    tracemalloc.start()
+    print('generating public playlist file ' + tracemalloc.get_traced_memory())
 
     if os.path.exists(publicPlaylistFile):
         os.remove(publicPlaylistFile)
@@ -280,6 +286,12 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restric
     elapsed_time1 = (datetime.now() - start)
     print('generated public playlist file ' + str(elapsed_time1) )
 
+    # displaying the memory
+    print(tracemalloc.get_traced_memory())
+
+    # stopping the library
+    tracemalloc.stop()
+
     return all
     #return elapsed_time1
 
@@ -298,7 +310,7 @@ def getRandomPlaylistName(directory):
     return randomPlaylist['name']
 
 
-@lru_cache(maxsize = 128)
+@lru_cache(maxsize=16)
 def loadAudioFeatures(path="data/"):
     try:
         with (open(path+'audio_features.json', "r")) as f:

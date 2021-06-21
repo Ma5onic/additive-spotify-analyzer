@@ -23,6 +23,7 @@ import time
 import datetime
 import threading
 import random
+import logging
 
 load_dotenv()
 # https://docs.authlib.org/en/latest/flask/2/index.html#flask-oauth2-server
@@ -49,6 +50,9 @@ session_dataLoadingProgressMsg = 'dataLoadingProgressMsg'
 
 gdata = {}
 templateArgs = {}
+
+logging.basicConfig(filename=DATA_DIRECTORY+'/std.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+
 
 class ExportingThread(threading.Thread):
     def __init__(self):
@@ -87,13 +91,13 @@ def login_required(fn):
 
 def fetch_token():
     #log.info('fetch_token')
-    print ("fetching token... ")
+    logging.info ("fetching token... ")
     return session.get('token')
 
 
 def update_token(name, token, refresh_token=None, access_token=None):
     #log.info('update_token')
-    print ("updating token... ")
+    logging.info ("updating token... ")
     session['token'] = token
     return session['token']
 
@@ -164,7 +168,7 @@ def index():
 
 @app.route('/login')
 def login():
-    print ("doing login",str(request.referrer)," client_id",str(SPOTIFY_APP_ID))
+    logging.info ("doing login",str(request.referrer)," client_id",str(SPOTIFY_APP_ID))
 
     callback = url_for('spotify_authorized', _external=True)
 
@@ -181,13 +185,13 @@ def login():
 
 @app.route('/revoke')
 def revoke():
-    print ("doing revoke")
+    logging.info ("doing revoke")
     spotify.revoke()
 
 
 @app.route('/logout')
 def logout():
-    print("doing revoke")
+    logging.info("doing revoke")
     session.pop('token', None)
     session.pop('username', None)
     session.pop('wants_url', None)

@@ -24,6 +24,8 @@ from matplotlib.figure import Figure
 from sklearn.preprocessing import MinMaxScaler
 
 from functools import lru_cache
+import logging
+
 
 processedDataDir = "/additivespotifyanalyzer"
 lru_cache.DEBUG = True
@@ -237,7 +239,7 @@ def getRandomPlaylist(directory, type, restriction):
 
     publicPlaylistFile = directory+processedDataDir+"/public-playlists.json"
 
-    print("public playlists file is "+publicPlaylistFile)
+    logging.info("public playlists file is "+publicPlaylistFile)
     data = getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restriction)
 
     if data is None:
@@ -251,7 +253,7 @@ def getRandomPlaylist(directory, type, restriction):
     r = random.randint(0, len(data) - 1)
     elapsed_time2 = (datetime.now() - start)
 
-    print ('random playlist '+str(elapsed_time1)+' - '+str(elapsed_time2))
+    logging.info ('random playlist '+str(elapsed_time1)+' - '+str(elapsed_time2))
     return data[r]
 
 
@@ -259,11 +261,11 @@ def getRandomPlaylist(directory, type, restriction):
 def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restriction):
     if not os.path.exists(directory + processedDataDir):
         os.mkdir(directory + processedDataDir)
-        print('directory does not exist so create ' +directory+processedDataDir)
+        logging.info('directory does not exist so create ' +directory+processedDataDir)
     # get starting time
     start = datetime.now()
     tracemalloc.start()
-    print('generating public playlist file ' + str(tracemalloc.get_traced_memory()))
+    logging.info('generating public playlist file ' + str(tracemalloc.get_traced_memory()))
 
     if os.path.exists(publicPlaylistFile):
         os.remove(publicPlaylistFile)
@@ -285,10 +287,10 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restric
         json.dump(all, outfile, indent=0)
 
     elapsed_time1 = (datetime.now() - start)
-    print('generated public playlist file ' + str(elapsed_time1) )
+    logging.info('generated public playlist file ' + str(elapsed_time1) )
 
     # displaying the memory
-    print(tracemalloc.get_traced_memory())
+    logging.info(tracemalloc.get_traced_memory())
 
     # stopping the library
     tracemalloc.stop()

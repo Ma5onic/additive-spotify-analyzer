@@ -499,7 +499,7 @@ def getRandomPlaylist1():
 
     username = request.args.get('username')
 
-    r = request
+    #r = request
     #username = request.args.get('username')
 
     #if username is None:
@@ -511,7 +511,7 @@ def getRandomPlaylist1():
 
     #playlistName = request.args.get('playlistName')
 
-    playlists = None
+    #playlists = None
 
     #while playlists is None:
     #    username = analyze.getRandomUsername(DATA_DIRECTORY)
@@ -519,6 +519,7 @@ def getRandomPlaylist1():
     #    if library is not None and library['playlists'] is not None and len(library['playlists'])>0:
     #        playlists = library['playlists']
 
+    print("retrieving random playlist for "+username)
     playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
 
     if playlist is None:

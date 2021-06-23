@@ -35,17 +35,17 @@ lru_cache.DEBUG = True
 def testDb(directory):
     db = lite.connect(directory+'/TEST.db')
     cursor = db.cursor()
-    print('Connect ok')
+    logging.info('Connect ok')
 
 
 
 def cache_clear():
-    print("clearing analyze cache")
-    print(" loadAudioFeatures cache_info:" + str(loadAudioFeatures.cache_info()))
+    logging.info("clearing analyze cache")
+    logging.info(" loadAudioFeatures cache_info:" + str(loadAudioFeatures.cache_info()))
     loadAudioFeatures.cache_clear()
-    print(" loadAudioFeatures cache_info:"+str(loadLibraryFromFiles.cache_info()))
+    logging.info(" loadAudioFeatures cache_info:"+str(loadLibraryFromFiles.cache_info()))
     loadLibraryFromFiles.cache_clear()
-    print(" loadAudioFeatures cache_info:"+str(getOrGeneratePublicPlaylistsFile.cache_info()))
+    logging.info(" loadAudioFeatures cache_info:"+str(getOrGeneratePublicPlaylistsFile.cache_info()))
     getOrGeneratePublicPlaylistsFile.cache_clear()
 
 

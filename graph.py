@@ -223,7 +223,7 @@ def create_dataseries(dataPath):
         #dataSeries = np.delete(dataSeries, dataSeriesMsk, axis=0)
         #dataToDisplay = np.delete(dataToDisplay, dataSeriesMsk)
         #dataToDisplay = np.delete(dataToDisplay, dataSeriesMsk, axis=2)
-    print(" removed " )
+    logging.info(" removed " )
     #dataToDisplay = np.delete(dataToDisplay, dataSeriesMsk)
     #for i, item in enumerate(dataSeries):
      #   for j, key in enumerate(keys):

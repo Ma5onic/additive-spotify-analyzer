@@ -481,12 +481,20 @@ def publicPlaylist(playlist):
     return playlist['public'] is True and len(playlist['tracks']['items']) > 2
 
 
+@app.route('/testdb')
+def testDB():
+    print("testing db")
+    analyze.testDb(DATA_DIRECTORY)
 
+    return render_template('index.html', sortedA=None,
+                           subheader_message="db tested",
+                           library={},
+                           **session)
 
 
 @app.route('/randomPlaylistGet')
 #@login_required
-def getRandomPlaylist():
+def getRandomPlaylist1():
 
     playlistName = request.args.get('playlistName')
     #playlist = request.args.get('playlist')
@@ -502,7 +510,7 @@ def getRandomPlaylist():
 
 @app.route('/randomPlaylist')
 #@login_required
-def getRandomPlaylist1():
+def getRandomPlaylist():
 
     #username = request.args.get('username')
 
@@ -526,8 +534,7 @@ def getRandomPlaylist1():
     #    if library is not None and library['playlists'] is not None and len(library['playlists'])>0:
     #        playlists = library['playlists']
 
-    print("testing db")
-    analyze.testDb(DATA_DIRECTORY)
+
 
     print("getting random playlist")
 
@@ -563,8 +570,8 @@ def getRandomPlaylist1():
     #library= {}
     #library['tracks'] = tracks
     #playlist = json.dumps(playlist)
-    u = url_for('getRandomPlaylist', playlistName=playlistName, playlist=playlist,
-                           subheader_message=subheader_message)
+    #u = url_for('getRandomPlaylist', playlistName=playlistName, playlist=playlist,
+    #                       subheader_message=subheader_message)
     #return redirect(url_for('getRandomPlaylist', playlistName=playlistName, playlist=playlist,
     #                       subheader_message=subheader_message,
     #                       library=None,

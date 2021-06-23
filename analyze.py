@@ -32,6 +32,13 @@ processedDataDir = "/additivespotifyanalyzer"
 lru_cache.DEBUG = True
 
 
+def testDb(directory):
+    db = lite.connect(directory+'/TEST.db')
+    cursor = db.cursor()
+    print('Connect ok')
+
+
+
 def cache_clear():
     print("clearing analyze cache")
     print(" loadAudioFeatures cache_info:" + str(loadAudioFeatures.cache_info()))
@@ -240,9 +247,6 @@ def getRandomPlaylist(directory, type, restriction):
         return None
 
 
-    db = lite.connect(directory+'/TEST.db')
-    cursor = db.cursor()
-    print('Connect ok')
 
     publicPlaylistFile = directory+processedDataDir+"/public-playlists.json"
 

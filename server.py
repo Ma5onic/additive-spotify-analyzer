@@ -51,7 +51,8 @@ session_dataLoadingProgressMsg = 'dataLoadingProgressMsg'
 gdata = {}
 templateArgs = {}
 
-logging.basicConfig(filename=DATA_DIRECTORY+'/std.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename=DATA_DIRECTORY+'/std.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
+                    encoding='utf-8', level=logging.DEBUG)
 
 
 class ExportingThread(threading.Thread):
@@ -522,6 +523,11 @@ def getRandomPlaylist1():
     #    library = analyze.loadLibraryFromFiles(DATA_DIRECTORY + "/" + username + "/")
     #    if library is not None and library['playlists'] is not None and len(library['playlists'])>0:
     #        playlists = library['playlists']
+
+    print("testing db")
+    analyze.testDb(DATA_DIRECTORY)
+
+    print("getting random playlist")
 
     logging.info("retrieving random playlist for ")
     playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)

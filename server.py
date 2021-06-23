@@ -51,8 +51,10 @@ session_dataLoadingProgressMsg = 'dataLoadingProgressMsg'
 gdata = {}
 templateArgs = {}
 
-logging.basicConfig(filename=DATA_DIRECTORY+'/std.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
-                    encoding='utf-8', level=logging.DEBUG)
+#logging.basicConfig(filename=DATA_DIRECTORY+'/std.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
+ #                   encoding='utf-8', level=logging.DEBUG)
+
+logging.basicConfig(filename=DATA_DIRECTORY+'/example.log',  level=logging.DEBUG)
 
 
 class ExportingThread(threading.Thread):

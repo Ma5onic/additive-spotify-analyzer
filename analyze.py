@@ -15,6 +15,7 @@ import plotly
 import plotly.graph_objects as go
 import plotly.express as px
 import tracemalloc
+import sqlite3 as lite
 
 from sklearn.cluster import KMeans
 
@@ -145,6 +146,7 @@ def loadLibraryFromFiles(directory=None):
     if not isLibraryValid(directory):
         return None;
 
+
     # Dream database. Store dreams in memory for now.
     dreamsA = ['Python. Python, everywhere.']
     numberA = 10
@@ -237,10 +239,16 @@ def getRandomPlaylist(directory, type, restriction):
     if not os.path.exists(directory):
         return None
 
+
+    db = lite.connect(directory+'/TEST.db')
+    cursor = db.cursor()
+    print('Connect ok')
+
     publicPlaylistFile = directory+processedDataDir+"/public-playlists.json"
 
     logging.info("public playlists file is "+publicPlaylistFile)
     data = getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restriction)
+
 
     if data is None:
         return None

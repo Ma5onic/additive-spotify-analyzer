@@ -242,7 +242,7 @@ def getRandomUsername(directory):
 # def publicPlaylist(playlist):
 #     return playlist['public'] is True and len(playlist['tracks']['items']) > 2
 # getRandomPlaylist(....., publicPlaylist)
-def getRandomPlaylist(directory, type, restriction):
+def getRandomPlaylist(directory, dtype, restriction):
     if not os.path.exists(directory):
         return None
 
@@ -251,7 +251,7 @@ def getRandomPlaylist(directory, type, restriction):
     publicPlaylistFile=directory+processedDataDir+"/public-playlists.json"
 
     logging.info("public playlists file is "+publicPlaylistFile)
-    data = getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restriction)
+    data = getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restriction)
 
     if data is None:
         return None
@@ -269,7 +269,7 @@ def getRandomPlaylist(directory, type, restriction):
 
 
 #@lru_cache(maxsize=16)
-def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restriction):
+def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restriction):
     if not os.path.exists(directory + processedDataDir):
         os.mkdir(directory + processedDataDir)
         logging.info('directory does not exist so create ' +directory+processedDataDir)
@@ -281,7 +281,7 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restric
     if os.path.exists(publicPlaylistFile):
         os.remove(publicPlaylistFile)
 
-    list_of_files = glob.glob(directory+"/**/"+type+".json", recursive=True)
+    list_of_files = glob.glob(directory+"/**/"+dtype+".json", recursive=True)
     if len(list_of_files) == 0:
         return None
 

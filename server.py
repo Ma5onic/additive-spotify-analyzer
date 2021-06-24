@@ -486,6 +486,9 @@ def testDB():
     logging.info("testing db")
     analyze.testDb(DATA_DIRECTORY)
 
+    playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
+    logging.info("playlist " + str(playlist))
+
     return render_template('index.html', sortedA=None,
                            subheader_message="db tested",
                            library={},

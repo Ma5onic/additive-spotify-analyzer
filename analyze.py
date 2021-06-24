@@ -303,7 +303,7 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restri
             data = json.load(f)
             for one in data:
                 if restriction(one):
-                    logging.info("adding playlist "+str(one['name']))
+                    #logging.info("adding playlist "+str(one['name']))
                     cursor.execute("INSERT INTO publicplaylists VALUES (?,?) ",
                                    [str(one['name']),
                                    json.dumps(one)])
@@ -316,7 +316,7 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restri
     #    json.dump(all, outfile, indent=0)
 
     elapsed_time1 = (datetime.now() - start)
-    logging.info('generated public playlist file ' + str(elapsed_time1) )
+    logging.info('generated public playlist file ' + str(elapsed_time1) + " size="+str(count))
 
     # displaying the memory
     logging.info(tracemalloc.get_traced_memory())

@@ -300,6 +300,8 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restri
     count = 0
     for file in list_of_files:
         with open(file, "r") as f:
+            logging.info("processsing playlist file " + str(file))
+            logging.info(tracemalloc.get_traced_memory())
             data = json.load(f)
             for one in data:
                 if restriction(one):

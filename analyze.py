@@ -246,13 +246,12 @@ def getRandomPlaylist(directory, type, restriction):
     if not os.path.exists(directory):
         return None
 
+    logging.info("analyze.getRandomPlaylist ")
 
-
-    publicPlaylistFile = directory+processedDataDir+"/public-playlists.json"
+    publicPlaylistFile=directory+processedDataDir+"/public-playlists.json"
 
     logging.info("public playlists file is "+publicPlaylistFile)
     data = getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restriction)
-
 
     if data is None:
         return None
@@ -269,7 +268,7 @@ def getRandomPlaylist(directory, type, restriction):
     return data[r]
 
 
-@lru_cache(maxsize=16)
+#@lru_cache(maxsize=16)
 def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, type, restriction):
     if not os.path.exists(directory + processedDataDir):
         os.mkdir(directory + processedDataDir)

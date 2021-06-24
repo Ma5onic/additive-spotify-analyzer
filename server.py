@@ -534,13 +534,11 @@ def getRandomPlaylist():
     #    if library is not None and library['playlists'] is not None and len(library['playlists'])>0:
     #        playlists = library['playlists']
 
-
-
     logging.info("getting random playlist")
 
-    #playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
+    playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
 
-    playlist = None
+    #playlist = None
 
     if playlist is None:
         return render_template('dataload.html', sortedA=None,

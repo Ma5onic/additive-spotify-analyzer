@@ -246,7 +246,7 @@ def getRandomPlaylist(directory, dtype, restriction):
     if not os.path.exists(directory):
         return None
 
-    logging.info("analyze.getRandomPlaylist ")
+    #logging.info("analyze.getRandomPlaylist ")
 
     publicPlaylistFile=directory+processedDataDir+"/public-playlists.json"
 
@@ -261,14 +261,20 @@ def getRandomPlaylist(directory, dtype, restriction):
 
     elapsed_time1 = (datetime.now() - start)
 
-    r = random.randint(0, len(data) - 1)
+    #r = random.randint(0, len(data) - 1)
     elapsed_time2 = (datetime.now() - start)
 
     logging.info ('random playlist '+str(elapsed_time1)+' - '+str(elapsed_time2))
-    return data[r]
+
+    db = lite.connect(publicPlaylistFile)
+    cursor = db.cursor()
+    one = cursor.execute('''SELECT jsondata FROM publicplaylists ORDER BY RANDOM() LIMIT 1;''')
+    one = one.fetchone()
+    one = one[0]
+    return json.loads(one)
 
 
-#@lru_cache(maxsize=16)
+@lru_cache(maxsize=16)
 def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restriction):
     if not os.path.exists(directory + processedDataDir):
         os.mkdir(directory + processedDataDir)
@@ -285,17 +291,29 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restri
     if len(list_of_files) == 0:
         return None
 
-    all = []
+    #all = []
+    db = lite.connect(publicPlaylistFile)
+    cursor = db.cursor()
+    cursor.execute('''CREATE TABLE publicplaylists
+                   (name text, jsondata json)''')
 
+    count = 0
     for file in list_of_files:
         with open(file, "r") as f:
             data = json.load(f)
             for one in data:
                 if restriction(one):
-                    all.append(one)
+                    logging.info("adding playlist "+str(one['name']))
+                    cursor.execute("INSERT INTO publicplaylists VALUES (?,?) ",
+                                   [str(one['name']),
+                                   json.dumps(one)])
+                    count = count +1
+                    #all.append(one)
 
-    with (open(publicPlaylistFile, "w")) as outfile:
-        json.dump(all, outfile, indent=0)
+    db.commit()
+    db.close()
+    #with (open(publicPlaylistFile, "w")) as outfile:
+    #    json.dump(all, outfile, indent=0)
 
     elapsed_time1 = (datetime.now() - start)
     logging.info('generated public playlist file ' + str(elapsed_time1) )
@@ -306,7 +324,7 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restri
     # stopping the library
     tracemalloc.stop()
 
-    return all
+    return count
     #return elapsed_time1
 
 

@@ -537,7 +537,7 @@ def getRandomPlaylist():
     #    if library is not None and library['playlists'] is not None and len(library['playlists'])>0:
     #        playlists = library['playlists']
 
-    logging.info("getting random playlist")
+    #logging.info("getting random playlist")
 
     playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
 

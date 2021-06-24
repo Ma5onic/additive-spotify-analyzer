@@ -304,6 +304,8 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restri
             logging.info(tracemalloc.get_traced_memory())
             elapsed_time1 = (datetime.now() - start)
             logging.info('time ' + str(elapsed_time1) + " size=" + str(count))
+            if count > 50:
+                break
             data = json.load(f)
             for one in data:
                 if restriction(one):

@@ -274,7 +274,7 @@ def getRandomPlaylist(directory, dtype, restriction):
     return json.loads(one)
 
 
-@lru_cache(maxsize=16)
+#@lru_cache(maxsize=16)
 def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restriction):
     if not os.path.exists(directory + processedDataDir):
         os.mkdir(directory + processedDataDir)
@@ -301,19 +301,23 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restri
     for file in list_of_files:
         with open(file, "r") as f:
             logging.info("processsing playlist file " + str(file))
-            logging.info(tracemalloc.get_traced_memory())
+
             elapsed_time1 = (datetime.now() - start)
             logging.info('time ' + str(elapsed_time1) + " size=" + str(count))
-            if count > 50:
+            memsize, mempeak = tracemalloc.get_traced_memory()
+            logging.info(tracemalloc.get_traced_memory())
+            if memsize > 300000000:
+                logging.warning("exceeding memory size")
                 break
             data = json.load(f)
             for one in data:
                 if restriction(one):
                     #logging.info("adding playlist "+str(one['name']))
                     cursor.execute("INSERT INTO publicplaylists VALUES (?,?) ",
-                                   [str(one['name']),
+                                   [str(one['owner']['id']+one['name']),
                                    json.dumps(one)])
                     count = count +1
+
                     #all.append(one)
 
     db.commit()

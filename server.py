@@ -851,7 +851,7 @@ def _retrieveSpotifyData(session):
 
 
 def getAllMeItems(itemtype, file_path=None, time_range=""):
-    logging.info ("Retrieving data from spotify for type ", itemtype)
+    logging.info ("Retrieving data from spotify for type ", str(itemtype))
     _setUserSessionMsg('Loading ' + str(itemtype)+'...')
     oauthtoken = session['token']['access_token']
 

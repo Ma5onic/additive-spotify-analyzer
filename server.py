@@ -851,7 +851,7 @@ def _retrieveSpotifyData(session):
 
 
 def getAllMeItems(itemtype, file_path=None, time_range=""):
-    logging.info ("Retrieving data from spotify for type ", str(itemtype))
+    logging.info ("Retrieving data from spotify for type " + str(itemtype))
     _setUserSessionMsg('Loading ' + str(itemtype)+'...')
     oauthtoken = session['token']['access_token']
 
@@ -875,8 +875,8 @@ def getAllMeItems(itemtype, file_path=None, time_range=""):
     # check if message='The access token expired'
     # status 401
     if ('error' in response):
-        logging.info ("response had an error ", response['error']['status'])
-        logging.info ("")
+        logging.info("response had an error %s", str(response['error']['status']))
+        logging.info("")
 
     #if len(itemtype) == 0:
     #    return [response.get('id'), response.get('display_name')]

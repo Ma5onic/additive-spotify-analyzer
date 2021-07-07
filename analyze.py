@@ -40,6 +40,7 @@ publicPlaylistFile = {}
 publicPlaylistDb = None
 
 def init():
+    logging.info('initializing analyze...')
     if not os.path.exists(PUBLIC_PLAYLIST_DB):
         publicPlaylistDb = lite.connect(PUBLIC_PLAYLIST_DB)
 

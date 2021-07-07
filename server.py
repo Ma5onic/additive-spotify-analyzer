@@ -59,8 +59,14 @@ processedDataDir = "/additivespotifyanalyzer"
 #logging.basicConfig(filename=DATA_DIRECTORY+'/std.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
  #                   encoding='utf-8', level=logging.DEBUG)
 
-
+@app.before_first_request
 def init():
+    print ('initializing server...')
+
+    r = random.randint(0, 10000)
+    init_logging(log_file=DATA_DIRECTORY+'/log'+str(r)+'.log',  console_loglevel=logging.DEBUG)
+    # init_logging(console_loglevel=logging.DEBUG)
+
     if not os.path.exists(DATA_DIRECTORY):
         print("DATA_DIRECTORY does not exist... this will not end welll....")
 
@@ -1255,10 +1261,9 @@ def blog():
 
 if __name__ == '__main__':
     print('Executing main')
-    init()
+    #init()
     app.run(host='localhost', threaded=True, debug=True, ssl_context=('cert.pem', 'key.pem'))
     print('Done executing main')
-    #init_logging(log_file=DATA_DIRECTORY+'/l.log',  console_loglevel=logging.DEBUG)
-    #init_logging(console_loglevel=logging.DEBUG)
+
 
 

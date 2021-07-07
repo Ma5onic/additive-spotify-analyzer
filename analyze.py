@@ -26,16 +26,50 @@ from sklearn.preprocessing import MinMaxScaler
 
 from functools import lru_cache
 import logging
+from dotenv import load_dotenv
 
+load_dotenv()
+
+DATA_DIRECTORY = os.getenv('DATA_DIRECTORY')
+PUBLIC_PLAYLIST_DB = DATA_DIRECTORY + "/db/publicPlaylists.sqlite"
 
 processedDataDir = "/additivespotifyanalyzer"
 lru_cache.DEBUG = True
 
+publicPlaylistFile = {}
+publicPlaylistDb = None
 
-def testDb(directory):
-    db = lite.connect(directory+'/TEST.db')
-    cursor = db.cursor()
-    logging.info('Connect ok')
+def init():
+    if not os.path.exists(PUBLIC_PLAYLIST_DB):
+        publicPlaylistDb = lite.connect(PUBLIC_PLAYLIST_DB)
+
+        cursor = publicPlaylistDb.cursor()
+        cursor.execute('''CREATE TABLE if not exists publicplaylists
+                           (id text, jsondata json)''')
+        publicPlaylistDb.commit()
+        print('created publicplaylists table')
+
+
+
+def testDb(playlistname):
+    list_of_files = glob.glob(DATA_DIRECTORY + "/**/playlists-tracks.json", recursive=True)
+    if len(list_of_files) == 0:
+        return None
+
+    for filename in list_of_files:
+        if playlistname not in filename:
+            continue
+        print('converting public playlists' + str(filename))
+        with open(filename, "r") as f:
+            data = json.load(f)
+            addPublicPlaylists([data])
+            print("loaded playlsits from file ")
+
+
+def setDirectory(directory):
+    global publicPlaylistFile
+    publicPlaylistFile = directory + processedDataDir + "/public-playlists.json"
+
 
 
 
@@ -140,8 +174,8 @@ def isLibraryValid(directory=None):
     if not os.path.exists(directory+"topartists_medium_term.json"):
         return False
 
-    if not os.path.exists(directory+"playlists-tracks.json"):
-        return False
+    #if not os.path.exists(directory+"playlists-tracks.json"):
+    #    return False
 
     return True
 
@@ -181,7 +215,6 @@ def loadLibraryFromFiles(directory=None):
         with open(path+"playlists-tracks.json", "r") as tracksfile:
             tracks = json.load(tracksfile)
             library['playlists-tracks'] = tracks
-
 
         with open(path + "toptracks_long_term.json", "r") as tracksfile:
             tracks = json.load(tracksfile)
@@ -243,18 +276,17 @@ def getRandomUsername(directory):
 #     return playlist['public'] is True and len(playlist['tracks']['items']) > 2
 # getRandomPlaylist(....., publicPlaylist)
 def getRandomPlaylist(directory, dtype, restriction):
-    if not os.path.exists(directory):
+    if not os.path.exists(PUBLIC_PLAYLIST_DB):
         return None
 
     #logging.info("analyze.getRandomPlaylist ")
 
-    publicPlaylistFile=directory+processedDataDir+"/public-playlists.json"
 
-    logging.info("public playlists file is "+publicPlaylistFile)
-    data = getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restriction)
+    logging.info("public playlists file is "+str(PUBLIC_PLAYLIST_DB))
+    #data = getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restriction)
 
-    if data is None:
-        return None
+    #if data is None:
+    #    return None
 
     # get starting time
     start = datetime.now()
@@ -266,16 +298,38 @@ def getRandomPlaylist(directory, dtype, restriction):
 
     logging.info ('random playlist '+str(elapsed_time1)+' - '+str(elapsed_time2))
 
-    db = lite.connect(publicPlaylistFile)
+    db = lite.connect(PUBLIC_PLAYLIST_DB)
     cursor = db.cursor()
     one = cursor.execute('''SELECT jsondata FROM publicplaylists ORDER BY RANDOM() LIMIT 1;''')
     one = one.fetchone()
+
+    if one is None or len(one) == 0:
+        return None
     one = one[0]
     return json.loads(one)
 
 
-#@lru_cache(maxsize=16)
-def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restriction):
+
+def addPublicPlaylists(playlistsWithTracks):
+    db = lite.connect(PUBLIC_PLAYLIST_DB)
+    cursor = db.cursor()
+    count = 0
+    for playlists in playlistsWithTracks:
+        for playlist in playlists:
+            if playlist['public'] is True and len(playlist['tracks']['items']) > 0:
+                cursor.execute("INSERT or REPLACE INTO publicplaylists VALUES (?,?) ",
+                       [str(playlist['id']),
+                        json.dumps(playlist)])
+                count = count + 1
+                logging.info('loaded playlist '+str(playlist['id']))
+
+    db.commit()
+    db.close()
+    logging.info("added playlists:"+str(count))
+
+
+@lru_cache(maxsize=16)
+def getOrGeneratePublicPlaylistsFile(directory, dtype, restriction):
     if not os.path.exists(directory + processedDataDir):
         os.mkdir(directory + processedDataDir)
         logging.info('directory does not exist so create ' +directory+processedDataDir)
@@ -284,18 +338,16 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restri
     tracemalloc.start()
     logging.info('generating public playlist file ' + str(tracemalloc.get_traced_memory()))
 
-    if os.path.exists(publicPlaylistFile):
-        os.remove(publicPlaylistFile)
+    #if os.path.exists(publicPlaylistFile):
+    #    os.remove(publicPlaylistFile)
 
     list_of_files = glob.glob(directory+"/**/"+dtype+".json", recursive=True)
     if len(list_of_files) == 0:
         return None
 
     #all = []
-    db = lite.connect(publicPlaylistFile)
+    db = lite.connect(PUBLIC_PLAYLIST_DB)
     cursor = db.cursor()
-    cursor.execute('''CREATE TABLE publicplaylists
-                   (name text, jsondata json)''')
 
     count = 0
     for file in list_of_files:
@@ -313,8 +365,8 @@ def getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restri
             for one in data:
                 if restriction(one):
                     #logging.info("adding playlist "+str(one['name']))
-                    cursor.execute("INSERT INTO publicplaylists VALUES (?,?) ",
-                                   [str(one['owner']['id']+one['name']),
+                    cursor.execute("INSERT or REPLACE INTO publicplaylists VALUES (?,?) ",
+                                   [str(one['id']),
                                    json.dumps(one)])
                     count = count +1
 

@@ -567,6 +567,11 @@ def getPlaylist():
                                library={},
                                **session)
 
+    #https: // localhost: 5000 / playlist?playlistId = 6
+    #HoWLyjABf4N7oSItTrv94
+    #https: // localhost: 5000 / playlist?playlistId = 1
+    #KQnGup7xI7Zyk9lBhcoD5
+
     playlistName = playlist['name']
     subheader_message = "Playlist '" + playlistName + "' by "+playlist['owner']['display_name']
 

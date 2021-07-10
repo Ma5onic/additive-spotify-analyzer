@@ -542,23 +542,43 @@ def testDB():
         analyze.testDb(playlistName)
 
     playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
+    playlistId = playlist['id']
     logging.info("playlist " + str(playlist))
 
-    return render_template('index.html', sortedA=None,
-                           subheader_message="db tested",
-                           library={},
-                           **session)
+    return redirect(url_for('getRandomPlaylist', playlistId=playlistId))
 
 
-@app.route('/randomPlaylistGet')
+@app.route('/playlist')
 #@login_required
-def getRandomPlaylist1():
+def getPlaylist():
+    playlistId = request.args.get('playlistId')
 
-    playlistName = request.args.get('playlistName')
-    #playlist = request.args.get('playlist')
-    playlist = session.get('playlist')
-    playlist = json.loads(playlist)
-    subheader_message = "Playlist '" + playlistName + "'"
+    # r = request
+    # username = request.args.get('username')
+
+    playlist = None
+
+    if playlistId is not None:
+        playlist = analyze.getPublicPlaylist(playlistId)
+
+    if playlist is None:
+        return render_template('dataload.html', sortedA=None,
+                               subheader_message="",
+                               library={},
+                               **session)
+
+    playlistName = playlist['name']
+    subheader_message = "Playlist '" + playlistName + "' by "+playlist['owner']['display_name']
+
+    # library= {}
+    # library['tracks'] = tracks
+    # playlist = json.dumps(playlist)
+    # u = url_for('getRandomPlaylist', playlistName=playlistName, playlist=playlist,
+    #                       subheader_message=subheader_message)
+    # return redirect(url_for('getRandomPlaylist', playlistName=playlistName, playlist=playlist,
+    #                       subheader_message=subheader_message,
+    #                       library=None,
+    #                       **session))
 
     return render_template("randomPlaylist.html", playlistName=playlistName, playlist=playlist,
                            subheader_message=subheader_message,
@@ -569,17 +589,6 @@ def getRandomPlaylist1():
 @app.route('/randomPlaylist')
 #@login_required
 def getRandomPlaylist():
-
-    #username = request.args.get('username')
-
-    #r = request
-    #username = request.args.get('username')
-
-    #if username is None:
-    #    dataPath = _getDataPath()
-    #else:
-        #dataPath = str(DATA_DIRECTORY)+"/"+username+ "/"
-    #    dataPath = str(DATA_DIRECTORY) + "/127108998/"
 
 
     #playlistName = request.args.get('playlistName')
@@ -595,6 +604,9 @@ def getRandomPlaylist():
     #logging.info("getting random playlist")
 
     playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
+    playlistId = playlist['id']
+    logging.info("playlist " + str(playlist))
+
 
     #playlist = None
 
@@ -604,40 +616,7 @@ def getRandomPlaylist():
                                library={},
                                **session)
 
-    #while playlists is None or len(playlists)==0:
-    #    playlists = analyze.getRandom(DATA_DIRECTORY, 'playlists-tracks')
-
-    #r = random.randint(0, len(playlists) - 1)
-
-    #for i in range(0,len(playlists)):
-    #    i = (i + r)%len(playlists)
-    #    if playlists[i]['public'] is True:
-    #        playlist = playlists[i]
-    #        break
-
-    #for playlist in playlists:
-    #    if playlist['public'] is True:
-    #print(' playlist is public ' +playlist['name']+ ' owner:'+playlist['owner']['display_name'])
-
-
-    playlistName = playlist['name']
-
-    subheader_message = "Playlist '" + playlistName + "'"
-
-    #library= {}
-    #library['tracks'] = tracks
-    #playlist = json.dumps(playlist)
-    #u = url_for('getRandomPlaylist', playlistName=playlistName, playlist=playlist,
-    #                       subheader_message=subheader_message)
-    #return redirect(url_for('getRandomPlaylist', playlistName=playlistName, playlist=playlist,
-    #                       subheader_message=subheader_message,
-    #                       library=None,
-    #                       **session))
-
-    return render_template("randomPlaylist.html", playlistName=playlistName, playlist=playlist,
-                           subheader_message=subheader_message,
-                           library=None,
-                            **session)
+    return redirect(url_for('getPlaylist', playlistId=playlistId))
 
 
 @app.route('/dataload')

@@ -270,6 +270,18 @@ def getRandomUsername(directory):
     return list_of_files[r]
 
 
+def getPublicPlaylist(playlistId):
+    db = lite.connect(PUBLIC_PLAYLIST_DB)
+    cursor = db.cursor()
+    one = cursor.execute('''SELECT jsondata FROM publicplaylists where id =? ;''', [playlistId])
+    one = one.fetchone()
+
+    if one is None or len(one) == 0:
+        return None
+    one = one[0]
+    return json.loads(one)
+
+
 # Returns a random playlist
 # restriction should be a function that operates on a playlist to figure out if it should be added or not
 # example:

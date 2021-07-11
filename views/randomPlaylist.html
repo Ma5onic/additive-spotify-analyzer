@@ -38,7 +38,14 @@ console.log('las'+playlistName);
 		<!--div id="fh5co-blog-section" class="fh5co-section-gray"	-->
 					<div class="col-md-8 col-md-offset-2 text-center heading-section animate-box">
 						<br>
-						<h3>{{ subheader_message }} </h3>{% if playlistName is not none  %}
+						<h3>{{ subheader_message }}
+							<a href="https://open.spotify.com/playlist/{{playlist['id']}}">
+								<img src="public/images/spotify-green-icon.png" width="30"></a></h3>
+
+
+						<!--<iframe src="https://open.spotify.com/embed/playlist/{{playlist['id']}}" width="100%" height="80" frameBorder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+-->
+						{% if playlistName is not none  %}
 
 
 

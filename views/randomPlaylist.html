@@ -117,7 +117,8 @@ console.log('las'+playlistName);
 
 
 
-					{% for track in playlist['tracks']['items'] %}
+					{% for track in playlist['tracks']['items'] if track['track'] is not none %}
+
 					{% if loop.index < 200 %}
 
 <div class=" col-md-2 ">

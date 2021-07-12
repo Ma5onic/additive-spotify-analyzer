@@ -486,6 +486,11 @@ def getPlaylistDashboard():
         library['playlists-tracks'] = analyze.getPlaylist(session['id'], library['playlists'])
         tracks = library['playlists']
 
+    if playlist is None and library['playlists-tracks'] is None:
+        return render_template('dataload.html', subheader_message="",
+                                   library=library,
+                                   **session)
+
     return render_template('playlistDashboard.html', playlistName=playlistName, playlist=playlist,
                            subheader_message=subheader_message,
                            library=library,

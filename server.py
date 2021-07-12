@@ -1245,9 +1245,9 @@ def blog():
 
 if __name__ == '__main__':
     print('Executing main')
-    init()
+    #init()
     app.run(host='localhost', threaded=True, debug=True, ssl_context=('cert.pem', 'key.pem'))
-    print('Done executing main')
+
 
 
 

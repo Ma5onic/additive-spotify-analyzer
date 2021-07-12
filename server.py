@@ -473,21 +473,18 @@ def getPlaylistDashboard():
                                library=library,
                                **session)
 
-    playlistName = request.args.get('playlistName')
+    playlistId = request.args.get('playlistId')
+    playlistName = None
     playlist = None
-    if playlistName is not None:
+    if playlistId is not None:
+        playlist = analyze.getPlaylist(session['id'], library['playlists'], playlistId)
+        playlist = playlist[0] #getPlaylist always returns a list
+        playlistName = playlist['name']
         subheader_message = "Playlist " + playlistName
-        for playlist in library['playlists-tracks']:
-            if playlist['name'] == playlistName:
-                break
     else:
-        subheader_message = "Playlists count: " + str(len(library['playlists-tracks']))
-        tracks = library['playlists-tracks']
-
-
-
-    #library= {}
-    #library['tracks'] = tracks
+        subheader_message = "Playlists count: " + str(len(library['playlists']))
+        library['playlists-tracks'] = analyze.getPlaylist(session['id'], library['playlists'])
+        tracks = library['playlists']
 
     return render_template('playlistDashboard.html', playlistName=playlistName, playlist=playlist,
                            subheader_message=subheader_message,
@@ -538,14 +535,15 @@ def testDB():
     logging.info("testing db")
     playlistName = request.args.get('name')
 
+    ret = "done"
     if playlistName is not None:
-        analyze.testDb(playlistName)
+        ret = analyze.testDb(playlistName)
 
-    playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
-    playlistId = playlist['id']
-    logging.info("playlist " + str(playlist))
-
-    return redirect(url_for('getRandomPlaylist', playlistId=playlistId))
+    #playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
+    #playlistId = playlist['id']
+    #logging.info("playlist " + str(playlist))
+    return ret
+    #return redirect(url_for('getRandomPlaylist', playlistId=playlistId))
 
 
 @app.route('/playlist')
@@ -609,8 +607,6 @@ def getRandomPlaylist():
     #logging.info("getting random playlist")
 
     playlist = analyze.getRandomPlaylist(DATA_DIRECTORY, 'playlists-tracks', publicPlaylist)
-    playlistId = playlist['id']
-    logging.info("playlist " + str(playlist))
 
 
     #playlist = None
@@ -620,6 +616,10 @@ def getRandomPlaylist():
                                subheader_message="",
                                library={},
                                **session)
+
+
+    playlistId = playlist['id']
+    logging.info("playlist " + str(playlist))
 
     return redirect(url_for('getPlaylist', playlistId=playlistId))
 
@@ -1127,7 +1127,7 @@ def getPlaylistTracks(playlists, file_path='data/'):
 
         playlistsWithTracks.append(oneplaylistWithTracks)
 
-    analyze.addPublicPlaylists(playlistsWithTracks)
+    analyze.addPlaylists(playlistsWithTracks)
     return playlistsWithTracks
 
 
@@ -1245,7 +1245,7 @@ def blog():
 
 if __name__ == '__main__':
     print('Executing main')
-    #init()
+    init()
     app.run(host='localhost', threaded=True, debug=True, ssl_context=('cert.pem', 'key.pem'))
     print('Done executing main')
 

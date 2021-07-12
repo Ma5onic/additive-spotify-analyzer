@@ -31,7 +31,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATA_DIRECTORY = os.getenv('DATA_DIRECTORY')
-PUBLIC_PLAYLIST_DB = DATA_DIRECTORY + "/db/publicPlaylists.sqlite"
+#PLAYLISTS_DB = DATA_DIRECTORY + "/db/playlists.sqlite"
+PLAYLISTS_TRACKS_DB = DATA_DIRECTORY + "/db/playlists-tracks.sqlite"
+PLAYLISTS_TRACKS_TABLE = "playliststracks"
 
 processedDataDir = "/additivespotifyanalyzer"
 lru_cache.DEBUG = True
@@ -41,14 +43,16 @@ publicPlaylistDb = None
 
 def init():
     logging.info('initializing analyze...')
-    if not os.path.exists(PUBLIC_PLAYLIST_DB):
-        publicPlaylistDb = lite.connect(PUBLIC_PLAYLIST_DB)
 
-        cursor = publicPlaylistDb.cursor()
-        cursor.execute('''CREATE TABLE if not exists publicplaylists
-                           (id text, jsondata json)''')
-        publicPlaylistDb.commit()
-        print('created publicplaylists table')
+    if not os.path.exists(PLAYLISTS_TRACKS_DB):
+        db = lite.connect(PLAYLISTS_TRACKS_DB)
+
+        # ptype 0-public
+        cursor = db.cursor()
+        cursor.execute('''CREATE TABLE if not exists ''' + PLAYLISTS_TRACKS_TABLE +
+                           '''(id text, owner text, ptype integer, jsondata json)''')
+        db.commit()
+        print('created ' + PLAYLISTS_TRACKS_DB)
 
 
 
@@ -57,21 +61,16 @@ def testDb(playlistname):
     if len(list_of_files) == 0:
         return None
 
+    ret = playlistname+" "
     for filename in list_of_files:
         if playlistname not in filename:
             continue
-        print('converting public playlists' + str(filename))
+        ret = ret + ' converting  playlists' + str(filename)
         with open(filename, "r") as f:
             data = json.load(f)
-            addPublicPlaylists([data])
-            print("loaded playlsits from file ")
-
-
-def setDirectory(directory):
-    global publicPlaylistFile
-    publicPlaylistFile = directory + processedDataDir + "/public-playlists.json"
-
-
+            addPlaylists([data])
+            ret = ret + " loaded playlsits from file "+str(len(data))
+    return ret
 
 
 def cache_clear():
@@ -80,8 +79,8 @@ def cache_clear():
     loadAudioFeatures.cache_clear()
     logging.info(" loadAudioFeatures cache_info:"+str(loadLibraryFromFiles.cache_info()))
     loadLibraryFromFiles.cache_clear()
-    logging.info(" loadAudioFeatures cache_info:"+str(getOrGeneratePublicPlaylistsFile.cache_info()))
-    getOrGeneratePublicPlaylistsFile.cache_clear()
+    #logging.info(" loadAudioFeatures cache_info:"+str(getOrGeneratePublicPlaylistsFile.cache_info()))
+    #getOrGeneratePublicPlaylistsFile.cache_clear()
 
 
 def getEmptyLibrary():
@@ -213,9 +212,9 @@ def loadLibraryFromFiles(directory=None):
             tracks = json.load(tracksfile)
             library['playlists'] = tracks
 
-        with open(path+"playlists-tracks.json", "r") as tracksfile:
-            tracks = json.load(tracksfile)
-            library['playlists-tracks'] = tracks
+        #with open(path+"playlists-tracks.json", "r") as tracksfile:
+         #   tracks = json.load(tracksfile)
+          #  library['playlists-tracks'] = tracks
 
         with open(path + "toptracks_long_term.json", "r") as tracksfile:
             tracks = json.load(tracksfile)
@@ -271,9 +270,9 @@ def getRandomUsername(directory):
 
 
 def getPublicPlaylist(playlistId):
-    db = lite.connect(PUBLIC_PLAYLIST_DB)
+    db = lite.connect(PLAYLISTS_TRACKS_DB)
     cursor = db.cursor()
-    one = cursor.execute('''SELECT jsondata FROM publicplaylists where id =? ;''', [playlistId])
+    one = cursor.execute('''SELECT jsondata FROM '''+PLAYLISTS_TRACKS_TABLE+''' where id =? ;''', [playlistId])
     one = one.fetchone()
 
     if one is None or len(one) == 0:
@@ -282,6 +281,42 @@ def getPublicPlaylist(playlistId):
     return json.loads(one)
 
 
+def getPlaylist(username, playlists, playlistId=None):
+    db = lite.connect(PLAYLISTS_TRACKS_DB)
+    cur = db.cursor()
+
+    res = None
+    #
+    if playlistId is None:
+        cur.row_factory = lambda cursor, row: row[0]
+        desired_ids = []
+        for p in playlists:
+            desired_ids.append(p['id'])
+
+        res = cur.execute('SELECT jsondata FROM ' + PLAYLISTS_TRACKS_TABLE +
+                             '  WHERE id IN (%s)' % ("?," * len(desired_ids))[:-1], desired_ids)
+
+        #res = cursor.execute('''SELECT jsondata FROM ''' + PLAYLISTS_TRACKS_TABLE + ''' where owner = ? ;''',
+         #                    [username])
+
+        res = res.fetchall()
+        res2 = res[:0]
+        res3 = []
+    else:
+
+        res = cur.execute('''SELECT jsondata FROM '''+PLAYLISTS_TRACKS_TABLE+''' where owner = ? and id =? ;''',
+                         [username, playlistId])
+        res = res.fetchone()
+
+    playlists = []
+    for playlist in res:
+        playlists.append(json.loads(playlist))
+
+    if playlists is None or len(playlists) == 0:
+        return None
+    #res = res[0]
+    return playlists
+
 # Returns a random playlist
 # restriction should be a function that operates on a playlist to figure out if it should be added or not
 # example:
@@ -289,13 +324,13 @@ def getPublicPlaylist(playlistId):
 #     return playlist['public'] is True and len(playlist['tracks']['items']) > 2
 # getRandomPlaylist(....., publicPlaylist)
 def getRandomPlaylist(directory, dtype, restriction):
-    if not os.path.exists(PUBLIC_PLAYLIST_DB):
+    if not os.path.exists(PLAYLISTS_TRACKS_DB):
         return None
 
     #logging.info("analyze.getRandomPlaylist ")
 
 
-    logging.info("public playlists file is "+str(PUBLIC_PLAYLIST_DB))
+    logging.info("public playlists file is "+str(PLAYLISTS_TRACKS_DB))
     #data = getOrGeneratePublicPlaylistsFile(directory,publicPlaylistFile, dtype, restriction)
 
     #if data is None:
@@ -311,9 +346,9 @@ def getRandomPlaylist(directory, dtype, restriction):
 
     logging.info ('random playlist '+str(elapsed_time1)+' - '+str(elapsed_time2))
 
-    db = lite.connect(PUBLIC_PLAYLIST_DB)
+    db = lite.connect(PLAYLISTS_TRACKS_DB)
     cursor = db.cursor()
-    one = cursor.execute('''SELECT jsondata FROM publicplaylists ORDER BY RANDOM() LIMIT 1;''')
+    one = cursor.execute('''SELECT jsondata FROM '''+PLAYLISTS_TRACKS_TABLE+''' where ptype=1 ORDER BY RANDOM() LIMIT 1;''')
     one = one.fetchone()
 
     if one is None or len(one) == 0:
@@ -323,84 +358,24 @@ def getRandomPlaylist(directory, dtype, restriction):
 
 
 
-def addPublicPlaylists(playlistsWithTracks):
-    db = lite.connect(PUBLIC_PLAYLIST_DB)
+def addPlaylists(playlistsWithTracks):
+    db = lite.connect(PLAYLISTS_TRACKS_DB)
     cursor = db.cursor()
     count = 0
     for playlists in playlistsWithTracks:
         for playlist in playlists:
-            if playlist['public'] is True and len(playlist['tracks']['items']) > 0:
-                cursor.execute("INSERT or REPLACE INTO publicplaylists VALUES (?,?) ",
-                       [str(playlist['id']),
+            ptype = 0
+            if playlist['public'] is True:
+                ptype = 1
+            cursor.execute("INSERT or REPLACE INTO "+PLAYLISTS_TRACKS_TABLE+" VALUES (?,?,?,?) ",
+                       [str(playlist['id']), str(playlist['owner']['id']), ptype,
                         json.dumps(playlist)])
-                count = count + 1
-                logging.info('loaded playlist '+str(playlist['id']))
+            count = count + 1
+            logging.info('loaded playlist '+str(playlist['id']))
 
     db.commit()
     db.close()
     logging.info("added playlists:"+str(count))
-
-
-@lru_cache(maxsize=16)
-def getOrGeneratePublicPlaylistsFile(directory, dtype, restriction):
-    if not os.path.exists(directory + processedDataDir):
-        os.mkdir(directory + processedDataDir)
-        logging.info('directory does not exist so create ' +directory+processedDataDir)
-    # get starting time
-    start = datetime.now()
-    tracemalloc.start()
-    logging.info('generating public playlist file ' + str(tracemalloc.get_traced_memory()))
-
-    #if os.path.exists(publicPlaylistFile):
-    #    os.remove(publicPlaylistFile)
-
-    list_of_files = glob.glob(directory+"/**/"+dtype+".json", recursive=True)
-    if len(list_of_files) == 0:
-        return None
-
-    #all = []
-    db = lite.connect(PUBLIC_PLAYLIST_DB)
-    cursor = db.cursor()
-
-    count = 0
-    for file in list_of_files:
-        with open(file, "r") as f:
-            logging.info("processsing playlist file " + str(file))
-
-            elapsed_time1 = (datetime.now() - start)
-            logging.info('time ' + str(elapsed_time1) + " size=" + str(count))
-            memsize, mempeak = tracemalloc.get_traced_memory()
-            logging.info(tracemalloc.get_traced_memory())
-            if memsize > 300000000:
-                logging.warning("exceeding memory size")
-                break
-            data = json.load(f)
-            for one in data:
-                if restriction(one):
-                    #logging.info("adding playlist "+str(one['name']))
-                    cursor.execute("INSERT or REPLACE INTO publicplaylists VALUES (?,?) ",
-                                   [str(one['id']),
-                                   json.dumps(one)])
-                    count = count +1
-
-                    #all.append(one)
-
-    db.commit()
-    db.close()
-    #with (open(publicPlaylistFile, "w")) as outfile:
-    #    json.dump(all, outfile, indent=0)
-
-    elapsed_time1 = (datetime.now() - start)
-    logging.info('generated public playlist file ' + str(elapsed_time1) + " size="+str(count))
-
-    # displaying the memory
-    logging.info(tracemalloc.get_traced_memory())
-
-    # stopping the library
-    tracemalloc.stop()
-
-    return count
-    #return elapsed_time1
 
 
 def loadRandomLibrary(directory):

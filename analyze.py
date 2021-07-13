@@ -50,7 +50,7 @@ def init():
         # ptype 0-public
         cursor = db.cursor()
         cursor.execute('''CREATE TABLE if not exists ''' + PLAYLISTS_TRACKS_TABLE +
-                           '''(id text, owner text, ptype integer, jsondata json)''')
+                           '''(id text NOT NULL UNIQUE, owner text not null, ptype integer, jsondata json)''')
         db.commit()
         print('created ' + PLAYLISTS_TRACKS_DB)
 

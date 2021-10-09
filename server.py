@@ -556,6 +556,7 @@ def testDB():
 def getPlaylist(playlistId):
     #playlistId = request.args.get('playlistId')
 
+    logging.info('getPlaylist '+playlistId)
     # r = request
     # username = request.args.get('username')
 
@@ -604,7 +605,6 @@ def getPlaylist(playlistId):
 
 
 @app.route('/randomPlaylist')
-#@login_required
 def getRandomPlaylist():
 
 

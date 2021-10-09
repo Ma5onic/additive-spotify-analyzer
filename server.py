@@ -551,10 +551,10 @@ def testDB():
     #return redirect(url_for('getRandomPlaylist', playlistId=playlistId))
 
 
-@app.route('/playlist')
+@app.route('/playlist/<playlistId>')
 #@login_required
-def getPlaylist():
-    playlistId = request.args.get('playlistId')
+def getPlaylist(playlistId):
+    #playlistId = request.args.get('playlistId')
 
     # r = request
     # username = request.args.get('username')
@@ -565,15 +565,24 @@ def getPlaylist():
         playlist = analyze.getPublicPlaylist(playlistId)
 
     if playlist is None:
-        return render_template('dataload.html', sortedA=None,
+        playlist = {}
+        playlist['id']=playlistId
+        playlist['name']='unknown'
+        playlists = []
+        playlists.append(playlist)
+        playlistsWithTracks = getPlaylistTracks(playlists)
+
+        if playlistsWithTracks is None or len(playlistsWithTracks) == 0:
+            return render_template('dataload.html', sortedA=None,
                                subheader_message="",
                                library={},
                                **session)
-
+        playlist=playlistsWithTracks[0][0]
     #https: // localhost: 5000 / playlist?playlistId = 6
     #HoWLyjABf4N7oSItTrv94
     #https: // localhost: 5000 / playlist?playlistId = 1
     #KQnGup7xI7Zyk9lBhcoD5
+    #3Y7iQBZXTBoiScWRONJOAe
 
     playlistName = playlist['name']
     subheader_message = "Playlist '" + playlistName + "' by "+playlist['owner']['display_name']
@@ -624,7 +633,7 @@ def getRandomPlaylist():
 
 
     playlistId = playlist['id']
-    logging.info("playlist " + str(playlist))
+    #logging.info("playlist " + str(playlist))
 
     return redirect(url_for('getPlaylist', playlistId=playlistId))
 
@@ -854,7 +863,7 @@ def _retrieveSpotifyData(session):
     # _setUserSessionMsg("Top artists loaded. Loading playlists..." + analyze.getLibrarySize(library))
     # when retrieving all user playlists, tracks are not included so we need to do another request
     # in the end we will have all playlists with their tracks for the user
-    library['playlists'] = getPlaylistTracks(library['playlists'], file_path)
+    library['playlists'] = getPlaylistTracks(library['playlists'])
 
     _setUserSessionMsg("All data loaded <br>" + analyze.getLibrarySize(library))
     logging.info("All data downloaded "+analyze.getLibrarySize(library))
@@ -1058,7 +1067,7 @@ def retrieveBatch(api_url, auth_header):
 #         },
 # this method loops over all playlists downloaded (public and private)
 # and it generates one json file for each playlist
-def getPlaylistTracks(playlists, file_path='data/'):
+def getPlaylistTracks(playlists):
     logging.info ("Retrieving playlist tracks from spotify for all playlists ")
     if (session!=None and session.get('token')!=None):
         oauthtoken = session['token']['access_token']
@@ -1082,7 +1091,9 @@ def getPlaylistTracks(playlists, file_path='data/'):
         #ids.append(id)
         limit-=1
         #if (limit == 0 or (len(tracks)+len(ids))==len(playlists)):
-        api_url = api_url_base+"" + id
+        #api_url = api_url_base+"" + id + "/?fields=tracks.items(track(name,href,album(!name,href,available_markets)))"
+        api_url = api_url_base + "" + id
+
         featureBatch = retrieveBatch(api_url, auth_header)
         if featureBatch==None:
             logging.info('no features returned')

@@ -552,7 +552,7 @@ def testDB():
 
 
 @app.route('/playlist/<playlistId>')
-#@login_required
+@login_required
 def getPlaylist(playlistId):
     #playlistId = request.args.get('playlistId')
 
@@ -602,6 +602,47 @@ def getPlaylist(playlistId):
                            subheader_message=subheader_message,
                            library=None,
                            **session)
+
+
+@app.route('/loadPlaylist')
+def getLoadPlaylist():
+    playlistInfo = request.args.get('playlistInfo')
+
+    if playlistInfo is None:
+        return render_template('index.html', sortedA=None,
+                               subheader_message="",
+                               library={},
+                               **session)
+
+    #https://open.spotify.com/playlist/0s5mcEiGHNj50h3k3bZLSJ?si=d621b68e570544b3&fbclid=IwAR1UfvoR-fUxXbzG4eTgd5ZaaNtbIWGQCjRA_qCG37dkgTrMJDt7fdIT2eM&nd=1
+    #a = playlistInfo.split('https://')
+    a = playlistInfo.split('spotify.com/playlist/')
+
+    playlistId = None
+    if len(a)>1:
+        playlistIds = a[1].split('?')
+
+        playlistId = playlistIds[0]
+    elif len(a) == 1:
+        if '/' not in a[0]:
+            playlistIds = a[0].split('?')
+            playlistId = playlistIds[0]
+
+
+    if playlistId is not None:
+        logging.info("found match "+playlistId)
+        return redirect(url_for('getPlaylist', playlistId=playlistId))
+    else:
+
+        return redirect(url_for('index'))
+
+        #return render_template('index.html', sortedA=None,
+         #                      subheader_message="",
+          #                     library={},
+           #                    **session)
+
+
+
 
 
 @app.route('/randomPlaylist')

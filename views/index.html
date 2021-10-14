@@ -65,10 +65,12 @@
 		<a href="https://github.com/dmossakowski/additive-spotify-analyzer/issues">add an issue</a><br><br>
 
 
-	{% if lastmodified is defined and lastmodified %}
-
-		<i>Your data was last updated: {{ lastmodified }}</i><br><br>
-	{% endif %}
+		<div class="d-grid gap-2 d-md-block" id="updateButton">
+		Enter below a Spotify playlist link (or just playlist id):
+		<form class="form-outline" action="/loadPlaylist" method="get">
+			<input type="text" name="playlistInfo" size="60" class="form-control">
+			<button type="submit" class="btn btn-primary">Load</button> </form>
+		</div>
 
 
 <div id="fblikebutton"  class="fb-like" data-href="https://www.facebook.com/AdditiveSpotifyAnalyzer" data-width="" data-layout="button" data-action="like" data-size="small" data-share="true"></div>

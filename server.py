@@ -201,12 +201,13 @@ def index():
         else:
             profileimageurl = profile['images'][0]['url']
             display_name = profile['display_name']
+            session['profileimageurl'] = profile['images'][0]['url']
 
         l = analyze.getLibrarySize(library)
         lastModifiedDt = analyze.getUpdateDtStr(_getDataPath())
         #_setUserSessionMsg("Library size: "+l)
         return render_template('index.html', subheader_message=hellomsg, genres=genres, library=library,
-                               sizetext=l, lastmodified=lastModifiedDt, profileimageurl=profileimageurl,
+                               sizetext=l, lastmodified=lastModifiedDt,
                                display_name=display_name, **session)
     else:
 
@@ -556,7 +557,7 @@ def testDB():
 def getPlaylist(playlistId):
     #playlistId = request.args.get('playlistId')
 
-    logging.info('getPlaylist '+playlistId)
+    logging.info(session['id']+' getPlaylist '+playlistId)
     # r = request
     # username = request.args.get('username')
 
@@ -573,11 +574,22 @@ def getPlaylist(playlistId):
         playlists.append(playlist)
         playlistsWithTracks = getPlaylistTracks(playlists)
 
-        if playlistsWithTracks is None or len(playlistsWithTracks) == 0:
+        if playlistsWithTracks is None:
             return render_template('dataload.html', sortedA=None,
                                subheader_message="",
                                library={},
                                **session)
+        elif playlistsWithTracks is LookupError:
+            return render_template('index.html', sortedA=None,
+                                   getPlaylistError="Playlist was not found",
+                                   library={},
+                                   **session)
+        elif len(playlistsWithTracks) == 0:
+            return render_template('index.html', sortedA=None,
+                                   getPlaylistError="Playlist has no tracks or it was not found",
+                                   library={},
+                                   **session)
+
         playlist=playlistsWithTracks[0][0]
     #https: // localhost: 5000 / playlist?playlistId = 6
     #HoWLyjABf4N7oSItTrv94
@@ -1082,7 +1094,7 @@ def getAudioFeatures(tracks, file_path='data/'):
 # this expects a url that retrieves some batch of data
 # the URL is not modified in the method and just the raw
 # results are returned
-def retrieveBatch(api_url, auth_header):
+def retrieveBatch(api_url, auth_header, iter=0):
     payload = {}
     responseraw = requests.get(api_url, params=payload, headers=auth_header)
     response = json.loads(responseraw.text)
@@ -1090,9 +1102,14 @@ def retrieveBatch(api_url, auth_header):
     # check if message='The access token expired'
     # status 401
     if 'error' in response:
-        logging.info ("response had an error ", response['error']['status'])
+        logging.info ("response had an error "+str(response['error']['status']))
         if response['error']['status'] == 401:
+            logging.info("relogin required... will retry "+str(iter))
+            if iter>2:
+                return None
             login()
+            return retrieveBatch(api_url, auth_header, iter+1)
+        if response['error']['status'] == 404:
             return None
     items = response
 
@@ -1109,12 +1126,13 @@ def retrieveBatch(api_url, auth_header):
 # this method loops over all playlists downloaded (public and private)
 # and it generates one json file for each playlist
 def getPlaylistTracks(playlists):
-    logging.info ("Retrieving playlist tracks from spotify for all playlists ")
     if (session!=None and session.get('token')!=None):
         oauthtoken = session['token']['access_token']
     else:
         logging.info("not loggged in")
         return render_template('index.html', subheader_message="No oauthtoken.. bad flow ", library={}, **session)
+
+    logging.info(session.get('username')+" retrieving playlist tracks from spotify for all playlists ")
 
     auth_header = {'Authorization': 'Bearer {token}'.format(token=oauthtoken), 'Content-Type': 'application/json'}
     api_url_base = 'https://api.spotify.com/v1/playlists/'
@@ -1137,7 +1155,7 @@ def getPlaylistTracks(playlists):
 
         featureBatch = retrieveBatch(api_url, auth_header)
         if featureBatch==None:
-            logging.info('no features returned')
+            #logging.info('no tracks returned')
             #break
             featureBatch = {'audio_features': {}} #dict.fromkeys(lastFeatureBatch,0)
 

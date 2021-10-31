@@ -88,7 +88,7 @@
 					<td>
 						{% if key['public']  %}
 							<a href="playlist/{{key['id']}}"><b>{{key['name']}} </b></a></td> <td><i>{{key['description']}}</i><br>
-						<a href="https://open.spotify.com/playlist/{{playlist['id']}}">
+						<a href="https://open.spotify.com/playlist/{{key['id']}}" target="_blank">
 								<img src="public/images/spotify-green-icon.png" width="20"></a></a>
 						{% else %}
 							<a href="playlistDashboard?playlistId={{key['id']}}"><b>{{key['name']}}</b></a></td> <td><i><br>{{key['description']}}</i></a>
